@@ -2,17 +2,18 @@ package com.fastcampus.sns.model;
 
 import com.fastcampus.sns.model.entity.UserEntity;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
-// TODO : implement
+@Data
 @AllArgsConstructor
-@Getter
+@NoArgsConstructor
 public class User {
 
     private Integer id;
-    private String userName;
+    private String username;
     private String password;
     private UserRole userRole;
     private Timestamp registeredAt;

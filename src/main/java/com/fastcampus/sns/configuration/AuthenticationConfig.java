@@ -19,10 +19,10 @@ public class AuthenticationConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/**").authenticated()
                 .and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                ;
         // TODO
-        // .exceptionHandling()
-        // .authenticationEntryPoint()
+//                .exceptionHandling()
+//                .authenticationEntryPoint(new CustomAuthenticationEntryPoint());
     }
 }

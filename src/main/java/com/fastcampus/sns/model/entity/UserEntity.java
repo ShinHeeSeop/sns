@@ -1,6 +1,5 @@
 package com.fastcampus.sns.model.entity;
 
-
 import com.fastcampus.sns.model.UserRole;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,10 +14,9 @@ import java.time.Instant;
 @Table(name = "\"user\"")
 @Getter
 @Setter
-@SQLDelete(sql = "UPDATED \"user\" SET deleted_at = NOW() where id=?")
+@SQLDelete(sql = "UPDATE \"user\" SET deleted_at = NOW() where id=?")
 @Where(clause = "deleted_at is NULL")
 public class UserEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -33,7 +31,7 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private UserRole role = UserRole.USER;
 
-    @Column(name = "register_at")
+    @Column(name = "registered_at")
     private Timestamp registeredAt;
 
     @Column(name = "updated_at")
