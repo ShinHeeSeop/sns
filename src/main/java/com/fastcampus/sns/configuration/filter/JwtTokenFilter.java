@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -25,28 +26,21 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final String key;
     private final UserService userService;
 
-    private final static List<String> TOKEN_IN_PARAM_URLS = List.of("/api/v1/users/alarm/subscribe");
-
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
-        final String token;
+        final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header == null || !header.startsWith("Bearer ")) {
+            log.error("Error occurs while getting header. header is null or invalid {}", request.getRequestURL());
+            filterChain.doFilter(request, response);
+            return;
+        }
         try {
-            if (TOKEN_IN_PARAM_URLS.contains(request.getRequestURI())) {
-                log.info("Request with {} check the query param", request.getRequestURI());
-                token = request.getQueryString().split("=")[1].trim();
-            } else {
-                final String header = request.getHeader(HttpHeaders.AUTHORIZATION);
-                if (header == null || !header.startsWith("Bearer ")) {
-                    log.error("Error occurs while getting header. header is null or invalid {}", request.getRequestURL());
-                    filterChain.doFilter(request, response);
-                    return;
-                }
-                token = header.split(" ")[1].trim();
-            }
+            final String token = header.split(" ")[1].trim();
 
             if (JwtTokenUtils.isExpired(token, key)) {
-                log.error("Key is expired");
+                log.error("Error occurs while validating.");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -55,11 +49,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             User user = userService.loadUserByUserName(userName);
 
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    user, null, user.getAuthorities());
+                    user, null, List.of(new SimpleGrantedAuthority(user.getUserRole().toString()))
+            );
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (RuntimeException e) {
-            log.error("Error occurs while validating. {}", e.toString());
+            log.error("Error occurs while getting header. {}", e.toString());
             filterChain.doFilter(request, response);
             return;
         }
