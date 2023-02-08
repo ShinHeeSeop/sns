@@ -40,7 +40,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             final String token = header.split(" ")[1].trim();
 
             if (JwtTokenUtils.isExpired(token, key)) {
-                log.error("Error occurs while validating.");
+                log.error("Key is expired");
                 filterChain.doFilter(request, response);
                 return;
             }
